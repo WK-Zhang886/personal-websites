@@ -8,6 +8,8 @@
 
 一个简洁的个人网站收藏夹。可以按分类保存常用网站，数据保存在当前浏览器中，并支持导出和导入备份。
 
+线上地址：[gleaming-moonbeam-720af0.netlify.app](https://gleaming-moonbeam-720af0.netlify.app/)
+
 这是一个纯前端静态网站，不需要服务器数据库。可以直接部署到 Netlify、GitHub Pages 或 Vercel。
 
 详细说明见：[个人网站收藏夹/README.md](个人网站收藏夹/README.md)
@@ -15,6 +17,8 @@
 ### 个人排行榜
 
 一个个人评分和排序工具，可以创建多个榜单，自定义等级、颜色和顺序，拖动项目调整排名，并导入导出完整备份。
+
+线上地址：[radiant-syrniki-8d8579.netlify.app](https://radiant-syrniki-8d8579.netlify.app/)
 
 数据默认保存在当前浏览器中，适合个人整理动漫、游戏、电影和其他兴趣内容。
 

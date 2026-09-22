@@ -2,6 +2,8 @@
 
 这是一个供个人使用的评分和排序网站，可以整理动漫、游戏、电影以及其他兴趣内容。
 
+线上地址：[radiant-syrniki-8d8579.netlify.app](https://radiant-syrniki-8d8579.netlify.app/)
+
 ## 已有功能
 
 - 创建和管理多张评分榜单

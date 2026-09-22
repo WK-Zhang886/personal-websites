@@ -2,6 +2,8 @@
 
 这是一个用于保存常用网站的个人收藏夹。可以按分类整理网址，也可以在浏览器中直接搜索和打开已保存的网站。
 
+线上地址：[gleaming-moonbeam-720af0.netlify.app](https://gleaming-moonbeam-720af0.netlify.app/)
+
 ## 主要功能
 
 - 按分类管理个人收藏
