@@ -1,0 +1,9 @@
+{
+  "name": "个人网站收藏夹",
+  "short_name": "收藏夹",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f4f2ec",
+  "theme_color": "#101622",
+  "lang": "zh-CN"
+}

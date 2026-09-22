@@ -1,0 +1,26 @@
+
+  vinext dev  (Vite 8.0.13)
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Debug:   http://localhost:3000/__debug
+ GET / 200 in 1.2s (compile: 1785425067.6s, render: 1.2s)
+ GET / 200 in 76ms (compile: 1785425067.6s, render: 46ms)
+23:28:25 [vite] (rsc) hmr update /app/globals.css
+23:28:25 [vite] (client) hmr update /app/globals.css?direct
+ GET /?_rsc 200 in 158ms (compile: 1785425067.7s, render: 0ms)
+ GET / 200 in 64ms (compile: 1785425067.6s, render: 43ms)
+ GET / 200 in 64ms (compile: 1785425067.6s, render: 41ms)
+ GET / 200 in 81ms (compile: 1785425067.6s, render: 47ms)
+ GET / 200 in 67ms (compile: 1785425067.6s, render: 42ms)
+00:31:30 [vite] (client) page reload netlify-index.html
+ GET / 200 in 73ms (compile: 1785425067.6s, render: 47ms)
+00:32:11 [vite] (client) page reload netlify-dist/netlify-index.html
+00:47:29 [vite] (client) page reload netlify-dist/netlify-index.html
+00:47:29 [vite] (client) page reload netlify-dist/netlify-index.html
+00:08:12 [vite] (rsc) hmr update /app/globals.css
+00:08:12 [vite] (client) hmr update /app/globals.css?direct
+00:08:43 [vite] (rsc) hmr update /app/globals.css
+00:08:43 [vite] (client) hmr update /app/globals.css?direct
+00:10:02 [vite] (rsc) hmr update /app/globals.css
+00:10:02 [vite] (client) hmr update /app/globals.css?direct
+[ELIFECYCLE] Command failed with exit code 1.

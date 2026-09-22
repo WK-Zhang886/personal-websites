@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101622" />
+    <meta name="apple-mobile-web-app-title" content="网站收藏夹" />
+    <title>个人网站收藏夹</title>
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="kicker">Personal Bookmarks</p>
+          <h1>我的网站收藏夹</h1>
+          <p class="hero-text">把常用网站、灵感来源和工作入口放在一个清爽的地方。</p>
+        </div>
+        <div class="hero-actions">
+          <button class="primary-btn" id="addBookmarkBtn" type="button">添加网站</button>
+          <button class="ghost-btn" id="exportBtn" type="button">导出</button>
+          <label class="ghost-btn file-btn" for="importFile">导入</label>
+          <input id="importFile" type="file" accept="application/json" />
+        </div>
+      </header>
+
+      <main>
+        <section class="toolbar" aria-label="筛选工具">
+          <label class="search-box" for="searchInput">
+            <span>搜索</span>
+            <input id="searchInput" type="search" placeholder="网站名、网址、备注或标签" />
+          </label>
+          <div class="view-tools">
+            <select id="sortSelect" aria-label="排序方式">
+              <option value="pinned">置顶优先</option>
+              <option value="name">按名称</option>
+              <option value="recent">最近添加</option>
+            </select>
+            <button class="icon-btn" id="resetBtn" type="button" title="恢复示例数据" aria-label="恢复示例数据">↺</button>
+          </div>
+        </section>
+
+        <nav class="tag-strip" id="tagStrip" aria-label="分类"></nav>
+
+        <section class="stats" aria-label="收藏统计">
+          <div>
+            <strong id="totalCount">0</strong>
+            <span>个网站</span>
+          </div>
+          <div>
+            <strong id="tagCount">0</strong>
+            <span>个分类</span>
+          </div>
+          <div>
+            <strong id="pinnedCount">0</strong>
+            <span>个置顶</span>
+          </div>
+        </section>
+
+        <section class="bookmark-grid" id="bookmarkGrid" aria-live="polite"></section>
+        <section class="empty-state" id="emptyState" hidden>
+          <h2>这里还没有匹配的网站</h2>
+          <p>换个关键词，或者添加一个新收藏。</p>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="bookmark-dialog" id="bookmarkDialog">
+      <form method="dialog" id="bookmarkForm">
+        <div class="dialog-head">
+          <div>
+            <p class="kicker">Bookmark</p>
+            <h2 id="dialogTitle">添加网站</h2>
+          </div>
+          <button class="icon-btn" value="cancel" type="button" id="closeDialogBtn" aria-label="关闭">×</button>
+        </div>
+
+        <input id="bookmarkId" type="hidden" />
+        <label>
+          网站名称
+          <input id="nameInput" type="text" required placeholder="例如：GitHub" />
+        </label>
+        <label>
+          网站地址
+          <input id="urlInput" type="text" inputmode="url" required placeholder="https://example.com" />
+        </label>
+        <label>
+          分类标签
+          <input id="tagsInput" type="text" placeholder="工作, 设计, 学习" />
+        </label>
+        <label>
+          备注
+          <textarea id="notesInput" rows="3" placeholder="这个网站适合用来做什么？"></textarea>
+        </label>
+        <label class="check-row">
+          <input id="pinnedInput" type="checkbox" />
+          置顶显示
+        </label>
+
+        <div class="dialog-actions">
+          <button class="danger-btn" id="deleteBtn" type="button" hidden>删除</button>
+          <span></span>
+          <button class="ghost-btn" id="cancelBtn" type="button">取消</button>
+          <button class="primary-btn" type="submit">保存</button>
+        </div>
+      </form>
+    </dialog>
+
+    <template id="bookmarkTemplate">
+      <article class="bookmark-card">
+        <div class="card-top">
+          <div class="site-icon"></div>
+          <button class="pin" type="button" aria-label="切换置顶"></button>
+        </div>
+        <h2></h2>
+        <a target="_blank" rel="noreferrer"></a>
+        <p></p>
+        <div class="tag-list"></div>
+        <div class="card-actions">
+          <button class="ghost-btn visit-btn" type="button">访问</button>
+          <button class="ghost-btn edit-btn" type="button">编辑</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
