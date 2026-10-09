@@ -46,7 +46,7 @@ function moveDragPreview(preview, clientX, clientY) {
   preview.node.style.transform = `translate3d(${clientX - preview.offsetX}px, ${clientY - preview.offsetY}px, 0)`;
 }
 
-export function SortableLane({ containerId, children, onMove, className = "" }) {
+export function SortableLane({ containerId, children, onMove, className = "", disabled = false, id, hidden = false }) {
   const dragState = useRef(null);
 
   const clearDrag = () => {
@@ -98,6 +98,7 @@ export function SortableLane({ containerId, children, onMove, className = "" }) 
   };
 
   const handlePointerDown = (event) => {
+    if (disabled) return;
     if (event.button !== 0) return;
     if (event.target.closest(".card-action, input, button, select, textarea")) return;
 
@@ -122,6 +123,8 @@ export function SortableLane({ containerId, children, onMove, className = "" }) 
   return (
     <div
       className={`item-lane ${className}`}
+      id={id}
+      hidden={hidden}
       data-container-id={containerId}
       onPointerDown={handlePointerDown}
     >

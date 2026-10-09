@@ -17,7 +17,7 @@ test("dialogs expose archive metadata and inline item deletion confirmation", ()
   assert.match(source, /onKeyDown={[\s\S]*?event\.key === "Enter"/);
 
   const itemSaveHandler = source.match(
-    /const saveEditedItem = \([\s\S]*?\n  const openItemEditor/,
+    /const saveEditedItem = (?:async )?\([\s\S]*?\n  const openItemEditor/,
   )?.[0];
 
   assert.ok(itemSaveHandler, "item save handler should be present");

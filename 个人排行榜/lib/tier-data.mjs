@@ -1,3 +1,5 @@
+import { DEFAULT_BOARD_ICON, resolveBoardIcon } from "./board-icons.mjs";
+
 const DEFAULT_TIERS = [
   ["S", "#ff6b6b"],
   ["A", "#ff9f43"],
@@ -42,6 +44,7 @@ export function createBoard(
     id: idFactory(),
     title: title.trim() || "未命名榜单",
     category: category.trim() || "其他",
+    icon: DEFAULT_BOARD_ICON,
     createdAt,
     updatedAt: createdAt,
     tiers: DEFAULT_TIERS.map(([label, color]) =>
@@ -57,6 +60,7 @@ export function normalizeBoard(input) {
     id: String(board.id || defaultId()),
     title: String(board.title || "未命名榜单"),
     category: String(board.category || "其他"),
+    icon: resolveBoardIcon(board.icon),
     createdAt: String(board.createdAt || now()),
     updatedAt: String(board.updatedAt || now()),
     tiers: Array.isArray(board.tiers)
@@ -126,4 +130,3 @@ export function moveItem(board, itemId, fromId, toId, targetIndex) {
   target.splice(safeIndex, 0, taken.item);
   return moved;
 }
-

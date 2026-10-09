@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./ranking-workspace.css";
 
 export const metadata: Metadata = {
   title: "我的评分宇宙",
@@ -17,4 +18,3 @@ export default function RootLayout({
     </html>
   );
 }
-

@@ -2,6 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 
 import "./app/globals.css";
+import "./app/ranking-workspace.css";
 import TierApp from "./components/TierApp.jsx";
 
 createRoot(document.getElementById("root")).render(
