@@ -3,7 +3,7 @@
   "short_name": "收藏夹",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#f4f2ec",
-  "theme_color": "#101622",
+  "background_color": "#f8f7f4",
+  "theme_color": "#f8f7f4",
   "lang": "zh-CN"
 }

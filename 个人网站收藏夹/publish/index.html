@@ -3,106 +3,121 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#101622" />
+    <meta name="theme-color" content="#f8f7f4" />
     <meta name="apple-mobile-web-app-title" content="网站收藏夹" />
+    <meta name="description" content="把常用网站、灵感来源和工作入口放在一个清爽的地方。" />
     <title>个人网站收藏夹</title>
     <link rel="manifest" href="site.webmanifest" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="preload" href="assets/bookmark-visual-lycoreco.webp" as="image" type="image/webp" fetchpriority="high" />
+    <link rel="stylesheet" href="styles.css?v=20261005-webp" />
   </head>
   <body>
+    <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="icon-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4Z" /></symbol>
+      <symbol id="icon-export" viewBox="0 0 24 24"><path d="M12 15V3m-4 4 4-4 4 4M4 14v6h16v-6" /></symbol>
+      <symbol id="icon-import" viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 14v6h16v-6" /></symbol>
+      <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+      <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4 4" /></symbol>
+      <symbol id="icon-reset" viewBox="0 0 24 24"><path d="M20 7v5h-5M20 12a8 8 0 1 0-2.1 5.4M20 12a8 8 0 0 0-13.5-5.8" /></symbol>
+      <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" /></symbol>
+      <symbol id="icon-external" viewBox="0 0 24 24"><path d="M14 4h6v6m0-6L10 14M10 4H4v16h16v-6" /></symbol>
+      <symbol id="icon-edit" viewBox="0 0 24 24"><path d="m15 4 5 5M4 20l1-6L16 3a2 2 0 0 1 3 0l2 2a2 2 0 0 1 0 3L10 19Z" /></symbol>
+      <symbol id="icon-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.4 1.1 6.3-5.6-3-5.6 3 1.1-6.3L2.9 9.6l6.3-.9Z" /></symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6" /></symbol>
+    </svg>
+
+    <header class="site-header">
+      <div class="topbar">
+        <nav class="header-actions" aria-label="收藏备份">
+          <button class="text-btn" id="exportBtn" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-export" /></svg><span>导出</span>
+          </button>
+          <button class="text-btn" id="importBtn" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-import" /></svg><span>导入</span>
+          </button>
+          <input id="importFile" type="file" accept="application/json,.json" hidden />
+        </nav>
+      </div>
+    </header>
+
     <div class="app-shell">
-      <header class="hero">
+      <section class="hero" aria-labelledby="pageTitle">
         <div class="hero-copy">
           <p class="kicker">Personal Bookmarks</p>
-          <h1>我的网站收藏夹</h1>
+          <h1 id="pageTitle">我的网站收藏夹</h1>
           <p class="hero-text">把常用网站、灵感来源和工作入口放在一个清爽的地方。</p>
+          <button class="primary-btn" id="addBookmarkBtn" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-plus" /></svg><span>添加网站</span>
+          </button>
         </div>
-        <div class="hero-actions">
-          <button class="primary-btn" id="addBookmarkBtn" type="button">添加网站</button>
-          <button class="ghost-btn" id="exportBtn" type="button">导出</button>
-          <label class="ghost-btn file-btn" for="importFile">导入</label>
-          <input id="importFile" type="file" accept="application/json" />
-        </div>
-      </header>
+      </section>
 
       <main>
-        <section class="toolbar" aria-label="筛选工具">
+        <section class="toolbar" aria-label="搜索与排序">
           <label class="search-box" for="searchInput">
-            <span>搜索</span>
-            <input id="searchInput" type="search" placeholder="网站名、网址、备注或标签" />
+            <span class="sr-only">搜索收藏</span>
+            <svg class="icon" aria-hidden="true"><use href="#icon-search" /></svg>
+            <input id="searchInput" type="search" placeholder="搜索网站、网址、备注或标签" autocomplete="off" />
           </label>
           <div class="view-tools">
-            <select id="sortSelect" aria-label="排序方式">
-              <option value="pinned">置顶优先</option>
-              <option value="name">按名称</option>
-              <option value="recent">最近添加</option>
-            </select>
-            <button class="icon-btn" id="resetBtn" type="button" title="恢复示例数据" aria-label="恢复示例数据">↺</button>
+            <div class="select-wrap">
+              <select id="sortSelect" aria-label="排序方式">
+                <option value="pinned">置顶优先</option>
+                <option value="name">按名称</option>
+                <option value="recent">最近添加</option>
+              </select>
+              <svg class="icon" aria-hidden="true"><use href="#icon-chevron" /></svg>
+            </div>
+            <button class="icon-btn reset-btn" id="resetBtn" type="button" title="恢复示例数据" aria-label="恢复示例数据">
+              <svg class="icon" aria-hidden="true"><use href="#icon-reset" /></svg>
+            </button>
           </div>
         </section>
 
-        <nav class="tag-strip" id="tagStrip" aria-label="分类"></nav>
+        <nav class="tag-strip" id="tagStrip" aria-label="按分类筛选"></nav>
 
-        <section class="stats" aria-label="收藏统计">
-          <div>
-            <strong id="totalCount">0</strong>
-            <span>个网站</span>
+        <section class="collection" aria-labelledby="collectionTitle">
+          <div class="collection-heading">
+            <h2 id="collectionTitle">全部收藏</h2>
+            <p class="stats" aria-label="收藏统计">
+              <span><strong id="totalCount">0</strong> 个网站</span>
+              <span><strong id="tagCount">0</strong> 个分类</span>
+              <span><strong id="pinnedCount">0</strong> 个置顶</span>
+            </p>
           </div>
-          <div>
-            <strong id="tagCount">0</strong>
-            <span>个分类</span>
+          <div class="bookmark-grid" id="bookmarkGrid" aria-live="polite"></div>
+          <div class="empty-state" id="emptyState" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#icon-bookmark" /></svg>
+            <h3>这里还没有匹配的网站</h3>
+            <p>换个关键词，或者添加一个新收藏。</p>
           </div>
-          <div>
-            <strong id="pinnedCount">0</strong>
-            <span>个置顶</span>
-          </div>
-        </section>
-
-        <section class="bookmark-grid" id="bookmarkGrid" aria-live="polite"></section>
-        <section class="empty-state" id="emptyState" hidden>
-          <h2>这里还没有匹配的网站</h2>
-          <p>换个关键词，或者添加一个新收藏。</p>
         </section>
       </main>
     </div>
 
-    <dialog class="bookmark-dialog" id="bookmarkDialog">
+    <dialog class="bookmark-dialog" id="bookmarkDialog" aria-labelledby="dialogTitle">
       <form method="dialog" id="bookmarkForm">
         <div class="dialog-head">
           <div>
-            <p class="kicker">Bookmark</p>
+            <p class="dialog-kicker">YOUR BOOKMARK</p>
             <h2 id="dialogTitle">添加网站</h2>
           </div>
-          <button class="icon-btn" value="cancel" type="button" id="closeDialogBtn" aria-label="关闭">×</button>
+          <button class="icon-btn" value="cancel" type="button" id="closeDialogBtn" aria-label="关闭">
+            <svg class="icon" aria-hidden="true"><use href="#icon-close" /></svg>
+          </button>
         </div>
-
         <input id="bookmarkId" type="hidden" />
-        <label>
-          网站名称
-          <input id="nameInput" type="text" required placeholder="例如：GitHub" />
-        </label>
-        <label>
-          网站地址
-          <input id="urlInput" type="text" inputmode="url" required placeholder="https://example.com" />
-        </label>
-        <label>
-          分类标签
-          <input id="tagsInput" type="text" placeholder="工作, 设计, 学习" />
-        </label>
-        <label>
-          备注
-          <textarea id="notesInput" rows="3" placeholder="这个网站适合用来做什么？"></textarea>
-        </label>
-        <label class="check-row">
-          <input id="pinnedInput" type="checkbox" />
-          置顶显示
-        </label>
-
+        <label>网站名称<input id="nameInput" type="text" required placeholder="例如：GitHub" /></label>
+        <label>网站地址<input id="urlInput" type="text" inputmode="url" required placeholder="https://example.com" /></label>
+        <label>分类标签<input id="tagsInput" type="text" placeholder="工作, 设计, 学习" /><span class="field-hint">多个标签用逗号分隔</span></label>
+        <label>备注<textarea id="notesInput" rows="3" placeholder="这个网站适合用来做什么？"></textarea></label>
+        <label class="check-row"><input id="pinnedInput" type="checkbox" /><span>置顶显示</span></label>
         <div class="dialog-actions">
-          <button class="danger-btn" id="deleteBtn" type="button" hidden>删除</button>
-          <span></span>
-          <button class="ghost-btn" id="cancelBtn" type="button">取消</button>
-          <button class="primary-btn" type="submit">保存</button>
+          <button class="danger-btn" id="deleteBtn" type="button" hidden>删除网站</button>
+          <div class="dialog-submit">
+            <button class="ghost-btn" id="cancelBtn" type="button">取消</button>
+            <button class="primary-btn" type="submit">保存网站</button>
+          </div>
         </div>
       </form>
     </dialog>
@@ -110,20 +125,24 @@
     <template id="bookmarkTemplate">
       <article class="bookmark-card">
         <div class="card-top">
-          <div class="site-icon"></div>
-          <button class="pin" type="button" aria-label="切换置顶"></button>
+          <div class="site-icon" aria-hidden="true"></div>
+          <div class="site-heading"><h3></h3><a class="site-link" target="_blank" rel="noopener noreferrer"></a></div>
+          <button class="pin" type="button" aria-label="切换置顶" aria-pressed="false">
+            <svg class="icon" aria-hidden="true"><use href="#icon-star" /></svg>
+          </button>
         </div>
-        <h2></h2>
-        <a target="_blank" rel="noreferrer"></a>
-        <p></p>
+        <p class="card-notes"></p>
         <div class="tag-list"></div>
         <div class="card-actions">
-          <button class="ghost-btn visit-btn" type="button">访问</button>
-          <button class="ghost-btn edit-btn" type="button">编辑</button>
+          <a class="visit-btn" target="_blank" rel="noopener noreferrer">
+            <svg class="icon" aria-hidden="true"><use href="#icon-external" /></svg><span>打开网站</span>
+          </a>
+          <button class="edit-btn" type="button" aria-label="编辑网站" title="编辑网站">
+            <svg class="icon" aria-hidden="true"><use href="#icon-edit" /></svg>
+          </button>
         </div>
       </article>
     </template>
-
-    <script src="app.js"></script>
+    <script src="app.js?v=20261005-icons"></script>
   </body>
 </html>

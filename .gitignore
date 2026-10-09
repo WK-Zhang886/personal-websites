@@ -1,0 +1,12 @@
+node_modules/
+**/.next/
+**/.vinext/
+**/.wrangler/
+**/dist/
+**/tests/
+**/screenshots/
+**/artifacts/
+**/docs/superpowers/
+**/examples/
+*.log
+.env*

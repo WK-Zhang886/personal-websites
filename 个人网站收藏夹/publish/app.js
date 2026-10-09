@@ -1,4 +1,5 @@
 const storageKey = "personal-bookmark-site:v1";
+const faviconCache = new WeakMap();
 
 const starterBookmarks = [
   {
@@ -71,7 +72,9 @@ const elements = {
   template: document.querySelector("#bookmarkTemplate"),
   resetBtn: document.querySelector("#resetBtn"),
   exportBtn: document.querySelector("#exportBtn"),
+  importBtn: document.querySelector("#importBtn"),
   importFile: document.querySelector("#importFile"),
+  collectionTitle: document.querySelector("#collectionTitle"),
 };
 
 function loadBookmarks() {
@@ -104,16 +107,6 @@ function getHostname(url) {
   }
 }
 
-function getInitials(name) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
-
 function getAllTags() {
   return [...new Set(state.bookmarks.flatMap((bookmark) => bookmark.tags))].sort((a, b) =>
     a.localeCompare(b, "zh-CN"),
@@ -137,24 +130,18 @@ function getFilteredBookmarks() {
 
 function renderTags() {
   const tags = ["全部", ...getAllTags()];
-  const menu = document.createElement("details");
-  menu.className = "category-menu";
-  menu.open = state.activeTag !== "全部";
-
-  const summary = document.createElement("summary");
-  summary.innerHTML = `
-    <span>全部</span>
-    <strong>${state.activeTag === "全部" ? "所有分类" : state.activeTag}</strong>
-  `;
-
-  const options = document.createElement("div");
-  options.className = "category-options";
-  options.replaceChildren(
+  if (!tags.includes(state.activeTag)) state.activeTag = "全部";
+  const scrollLeft = elements.tagStrip.scrollLeft;
+  const focusedTag = elements.tagStrip.contains(document.activeElement)
+    ? document.activeElement.textContent
+    : null;
+  elements.tagStrip.replaceChildren(
     ...tags.map((tag) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = `category-option${tag === state.activeTag ? " active" : ""}`;
       button.textContent = tag;
+      button.setAttribute("aria-pressed", String(tag === state.activeTag));
       button.addEventListener("click", () => {
         state.activeTag = tag;
         render();
@@ -162,9 +149,12 @@ function renderTags() {
       return button;
     }),
   );
-
-  menu.append(summary, options);
-  elements.tagStrip.replaceChildren(menu);
+  elements.tagStrip.scrollLeft = scrollLeft;
+  if (focusedTag !== null) {
+    [...elements.tagStrip.children]
+      .find((button) => button.textContent === focusedTag)
+      ?.focus({ preventScroll: true });
+  }
 }
 
 function renderStats() {
@@ -175,42 +165,126 @@ function renderStats() {
 
 function renderBookmarks() {
   const bookmarks = getFilteredBookmarks();
+  const focusedCard = document.activeElement?.closest(".bookmark-card");
+  const focusedControl = document.activeElement?.matches(".pin")
+    ? ".pin"
+    : document.activeElement?.matches(".edit-btn") ? ".edit-btn" : null;
+  const focusedBookmarkId = focusedCard?.dataset.bookmarkId;
+  const focusedCardIndex = focusedCard ? [...elements.bookmarkGrid.children].indexOf(focusedCard) : -1;
+  elements.collectionTitle.textContent = state.activeTag === "全部" ? "全部收藏" : state.activeTag;
   elements.bookmarkGrid.replaceChildren(
     ...bookmarks.map((bookmark) => {
       const node = elements.template.content.firstElementChild.cloneNode(true);
+      node.dataset.bookmarkId = bookmark.id;
       const icon = node.querySelector(".site-icon");
       const pin = node.querySelector(".pin");
-      const title = node.querySelector("h2");
-      const link = node.querySelector("a");
-      const notes = node.querySelector("p");
+      const title = node.querySelector("h3");
+      const link = node.querySelector(".site-link");
+      const notes = node.querySelector(".card-notes");
       const tagList = node.querySelector(".tag-list");
       const visitBtn = node.querySelector(".visit-btn");
       const editBtn = node.querySelector(".edit-btn");
 
-      icon.textContent = getInitials(bookmark.name);
-      pin.textContent = bookmark.pinned ? "★" : "☆";
+      renderSiteIcon(icon, bookmark);
       pin.classList.toggle("active", bookmark.pinned);
+      pin.setAttribute("aria-pressed", String(bookmark.pinned));
+      pin.setAttribute("aria-label", `${bookmark.pinned ? "取消置顶" : "置顶"} ${bookmark.name}`);
+      pin.title = bookmark.pinned ? "取消置顶" : "置顶网站";
       title.textContent = bookmark.name;
+      title.title = bookmark.name;
       link.href = bookmark.url;
       link.textContent = getHostname(bookmark.url);
+      link.title = bookmark.url;
       notes.textContent = bookmark.notes || "暂无备注。";
+      notes.title = bookmark.notes || "暂无备注。";
       tagList.replaceChildren(
         ...bookmark.tags.map((tag) => {
           const span = document.createElement("span");
           span.textContent = tag;
+          span.title = tag;
           return span;
         }),
       );
 
       pin.addEventListener("click", () => togglePinned(bookmark.id));
-      visitBtn.addEventListener("click", () => window.open(bookmark.url, "_blank", "noreferrer"));
+      visitBtn.href = bookmark.url;
+      visitBtn.setAttribute("aria-label", `打开 ${bookmark.name}`);
+      editBtn.setAttribute("aria-label", `编辑 ${bookmark.name}`);
+      editBtn.title = `编辑 ${bookmark.name}`;
       editBtn.addEventListener("click", () => openDialog(bookmark));
 
       return node;
     }),
   );
 
+  if (focusedControl) {
+    const cards = [...elements.bookmarkGrid.children];
+    const replacement = cards.find((card) => card.dataset.bookmarkId === focusedBookmarkId)
+      || cards[Math.min(focusedCardIndex, cards.length - 1)];
+    (replacement?.querySelector(focusedControl) || elements.addBookmarkBtn).focus({ preventScroll: true });
+  }
+
   elements.emptyState.hidden = bookmarks.length > 0;
+}
+
+function renderSiteIcon(element, bookmark) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.classList.add("icon");
+  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  use.setAttribute("href", "#icon-bookmark");
+  svg.append(use);
+  element.replaceChildren(svg);
+
+  getSiteIcon(bookmark).then((image) => {
+    if (image && element.isConnected) element.replaceChildren(image);
+  });
+}
+
+function getSiteIcon(bookmark) {
+  let website;
+  try {
+    website = new URL(bookmark.url);
+    if (!["https:", "http:"].includes(website.protocol)) return Promise.resolve(null);
+  } catch {
+    return Promise.resolve(null);
+  }
+  if (!faviconCache.has(bookmark)) {
+    const sources = [
+      new URL("/favicon.ico", website.origin).href,
+      `https://a.favicon.im/${encodeURIComponent(website.hostname)}?throw-error-on-404=true&larger=true`,
+    ];
+    // Reuse the decoded image, so displaying it never needs a second request.
+    // Each bookmark owns its image; two entries for one site can both display it.
+    faviconCache.set(bookmark, (async () => {
+      for (const source of sources) {
+        const image = await loadIconSource(source);
+        if (image) return image;
+      }
+      return null;
+    })());
+  }
+  return faviconCache.get(bookmark);
+}
+
+function loadIconSource(source) {
+  return new Promise((resolve) => {
+    const image = new Image(24, 24);
+    image.alt = "";
+    image.referrerPolicy = "no-referrer";
+    image.decoding = "async";
+    const finish = (loaded) => {
+      clearTimeout(timer);
+      image.onload = null;
+      image.onerror = null;
+      if (!loaded) image.removeAttribute("src");
+      resolve(loaded ? image : null);
+    };
+    const timer = setTimeout(() => finish(false), 4000);
+    image.onload = () => finish(image.naturalWidth > 0 && image.naturalHeight > 0);
+    image.onerror = () => finish(false);
+    image.src = source;
+  });
 }
 
 function render() {
@@ -347,6 +421,7 @@ elements.resetBtn.addEventListener("click", () => {
   render();
 });
 elements.exportBtn.addEventListener("click", exportBookmarks);
+elements.importBtn.addEventListener("click", () => elements.importFile.click());
 elements.importFile.addEventListener("change", importBookmarks);
 
 render();
