@@ -70,7 +70,7 @@ const elements = {
   tagCount: document.querySelector("#tagCount"),
   pinnedCount: document.querySelector("#pinnedCount"),
   template: document.querySelector("#bookmarkTemplate"),
-  resetBtn: document.querySelector("#resetBtn"),
+  refreshBtn: document.querySelector("#refreshBtn"),
   exportBtn: document.querySelector("#exportBtn"),
   importBtn: document.querySelector("#importBtn"),
   importFile: document.querySelector("#importFile"),
@@ -412,14 +412,7 @@ elements.sortSelect.addEventListener("change", (event) => {
   state.sort = event.target.value;
   renderBookmarks();
 });
-elements.resetBtn.addEventListener("click", () => {
-  state.bookmarks = starterBookmarks.map((bookmark) => ({ ...bookmark, id: crypto.randomUUID() }));
-  state.activeTag = "全部";
-  state.query = "";
-  elements.searchInput.value = "";
-  saveBookmarks();
-  render();
-});
+elements.refreshBtn.addEventListener("click", () => window.location.reload());
 elements.exportBtn.addEventListener("click", exportBookmarks);
 elements.importBtn.addEventListener("click", () => elements.importFile.click());
 elements.importFile.addEventListener("change", importBookmarks);
