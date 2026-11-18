@@ -1,5 +1,8 @@
 const storageKey = "personal-bookmark-site:v1";
+const iconCacheKey = "personal-bookmark-site:icon-cache:v1";
+const iconCacheTtlMs = 7 * 24 * 60 * 60 * 1000;
 const faviconCache = new WeakMap();
+const persistedIconCache = loadPersistedIconCache();
 
 const starterBookmarks = [
   {
@@ -227,6 +230,36 @@ function renderBookmarks() {
   elements.emptyState.hidden = bookmarks.length > 0;
 }
 
+function loadPersistedIconCache() {
+  try {
+    const raw = localStorage.getItem(iconCacheKey);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function getCachedIconUrl(origin) {
+  const entry = persistedIconCache[origin];
+  if (!entry || typeof entry.url !== "string" || typeof entry.ts !== "number") return null;
+  if (Date.now() - entry.ts > iconCacheTtlMs) {
+    delete persistedIconCache[origin];
+    return null;
+  }
+  return entry.url;
+}
+
+function setCachedIconUrl(origin, url) {
+  persistedIconCache[origin] = { url, ts: Date.now() };
+  try {
+    localStorage.setItem(iconCacheKey, JSON.stringify(persistedIconCache));
+  } catch {
+    // Ignore storage quota or privacy mode errors.
+  }
+}
+
 function renderSiteIcon(element, bookmark) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
@@ -234,10 +267,14 @@ function renderSiteIcon(element, bookmark) {
   const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
   use.setAttribute("href", "#icon-bookmark");
   svg.append(use);
+  element.classList.remove("has-favicon");
   element.replaceChildren(svg);
 
   getSiteIcon(bookmark).then((image) => {
-    if (image && element.isConnected) element.replaceChildren(image);
+    if (image && element.isConnected) {
+      element.classList.add("has-favicon");
+      element.replaceChildren(image);
+    }
   });
 }
 
@@ -250,16 +287,23 @@ function getSiteIcon(bookmark) {
     return Promise.resolve(null);
   }
   if (!faviconCache.has(bookmark)) {
-    const sources = [
+    const cachedUrl = getCachedIconUrl(website.origin);
+    const defaultSources = [
       new URL("/favicon.ico", website.origin).href,
       `https://a.favicon.im/${encodeURIComponent(website.hostname)}?throw-error-on-404=true&larger=true`,
     ];
+    const sources = cachedUrl
+      ? [cachedUrl, ...defaultSources.filter((src) => src !== cachedUrl)]
+      : defaultSources;
     // Reuse the decoded image, so displaying it never needs a second request.
     // Each bookmark owns its image; two entries for one site can both display it.
     faviconCache.set(bookmark, (async () => {
       for (const source of sources) {
         const image = await loadIconSource(source);
-        if (image) return image;
+        if (image) {
+          setCachedIconUrl(website.origin, source);
+          return image;
+        }
       }
       return null;
     })());
@@ -269,7 +313,7 @@ function getSiteIcon(bookmark) {
 
 function loadIconSource(source) {
   return new Promise((resolve) => {
-    const image = new Image(24, 24);
+    const image = new Image(28, 28);
     image.alt = "";
     image.referrerPolicy = "no-referrer";
     image.decoding = "async";
@@ -280,7 +324,7 @@ function loadIconSource(source) {
       if (!loaded) image.removeAttribute("src");
       resolve(loaded ? image : null);
     };
-    const timer = setTimeout(() => finish(false), 4000);
+    const timer = setTimeout(() => finish(false), 1500);
     image.onload = () => finish(image.naturalWidth > 0 && image.naturalHeight > 0);
     image.onerror = () => finish(false);
     image.src = source;

@@ -9,7 +9,7 @@
     <title>个人网站收藏夹</title>
     <link rel="manifest" href="site.webmanifest" />
     <link rel="preload" href="assets/bookmark-visual-lycoreco.webp" as="image" type="image/webp" fetchpriority="high" />
-    <link rel="stylesheet" href="styles.css?v=20261115-refresh" />
+    <link rel="stylesheet" href="styles.css?v=20261118-redesign" />
   </head>
   <body>
     <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -26,22 +26,17 @@
       <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6" /></symbol>
     </svg>
 
-    <header class="site-header">
-      <div class="topbar">
+    <div class="app-shell">
+      <section class="hero" aria-labelledby="pageTitle">
         <nav class="header-actions" aria-label="收藏备份">
-          <button class="text-btn" id="exportBtn" type="button">
+          <button class="glass-btn" id="exportBtn" type="button">
             <svg class="icon" aria-hidden="true"><use href="#icon-export" /></svg><span>导出</span>
           </button>
-          <button class="text-btn" id="importBtn" type="button">
+          <button class="glass-btn" id="importBtn" type="button">
             <svg class="icon" aria-hidden="true"><use href="#icon-import" /></svg><span>导入</span>
           </button>
           <input id="importFile" type="file" accept="application/json,.json" hidden />
         </nav>
-      </div>
-    </header>
-
-    <div class="app-shell">
-      <section class="hero" aria-labelledby="pageTitle">
         <div class="hero-copy">
           <p class="kicker">Personal Bookmarks</p>
           <h1 id="pageTitle">我的网站收藏夹</h1>
@@ -132,17 +127,19 @@
           </button>
         </div>
         <p class="card-notes"></p>
-        <div class="tag-list"></div>
-        <div class="card-actions">
-          <a class="visit-btn" target="_blank" rel="noopener noreferrer">
-            <svg class="icon" aria-hidden="true"><use href="#icon-external" /></svg><span>打开网站</span>
-          </a>
-          <button class="edit-btn" type="button" aria-label="编辑网站" title="编辑网站">
-            <svg class="icon" aria-hidden="true"><use href="#icon-edit" /></svg>
-          </button>
+        <div class="card-footer">
+          <div class="tag-list"></div>
+          <div class="card-actions">
+            <a class="visit-btn" target="_blank" rel="noopener noreferrer" title="打开网站" aria-label="打开网站">
+              <svg class="icon" aria-hidden="true"><use href="#icon-external" /></svg>
+            </a>
+            <button class="edit-btn" type="button" aria-label="编辑网站" title="编辑网站">
+              <svg class="icon" aria-hidden="true"><use href="#icon-edit" /></svg>
+            </button>
+          </div>
         </div>
       </article>
     </template>
-    <script src="app.js?v=20261115-refresh"></script>
+    <script src="app.js?v=20261118-redesign"></script>
   </body>
 </html>
