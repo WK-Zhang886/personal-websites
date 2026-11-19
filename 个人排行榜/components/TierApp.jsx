@@ -36,6 +36,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "r
 import { boardEditorReducer, createEditorState, filterItems } from "../lib/board-editor.mjs";
 
 import {
+  collectReferencedImageIds,
   createBoard,
   createItem,
   createTier,
@@ -52,6 +53,7 @@ import {
   flushWrites,
   listBoards,
   listImages,
+  pruneUnusedImages,
   putImage,
   removeBoard,
   replaceEverything,
@@ -490,7 +492,7 @@ export default function TierApp() {
   const [search, setSearch] = useState("");
   const [coverSize, setCoverSize] = useState("medium");
   const [collapsedTiers, setCollapsedTiers] = useState({});
-  const [poolCollapsed, setPoolCollapsed] = useState(false);
+  const [poolOverride, setPoolOverride] = useState(null);
   const [exporting, setExporting] = useState(false);
   const [saveStatus, setSaveStatus] = useState("saved");
   const [busyMessage, setBusyMessage] = useState("");
@@ -500,8 +502,12 @@ export default function TierApp() {
   const boardExportRef = useRef(null);
   const saveTimer = useRef(null);
   const toastTimer = useRef(null);
+  const imageUrlMapRef = useRef(new Map());
+  const prevUnrankedRef = useRef({ boardId: null, count: 0 });
 
   const activeBoard = boards.find((board) => board.id === activeId) ?? null;
+  const unrankedCount = activeBoard?.unranked.length ?? 0;
+  const poolCollapsed = poolOverride === null ? unrankedCount === 0 : poolOverride;
   const searchQuery = exporting ? "" : search;
   const canUndo = Boolean(editor.history[activeId]?.length);
   const searchCount = activeBoard ? filterItems(collectItems(activeBoard), searchQuery).length : 0;
@@ -533,6 +539,14 @@ export default function TierApp() {
   }, []);
 
   useEffect(() => {
+    const map = imageUrlMapRef.current;
+    return () => {
+      map.forEach((url) => URL.revokeObjectURL(url));
+      map.clear();
+    };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       let saved = await listBoards();
@@ -540,6 +554,8 @@ export default function TierApp() {
         const starter = createBoard("我的第一张榜单", "");
         await saveBoard(starter);
         saved = [starter];
+      } else {
+        pruneUnusedImages(collectReferencedImageIds(saved)).catch(() => {});
       }
       if (!cancelled) {
         setBoards(saved);
@@ -572,31 +588,67 @@ export default function TierApp() {
       cancelled = true;
       window.clearTimeout(saveTimer.current);
     };
-  }, [boards, ready, notify, busyMessage]);
+  }, [boards, ready, notify]);
 
   useEffect(() => {
     setSearch("");
+    setPoolOverride(null);
   }, [activeId]);
+
+  useEffect(() => {
+    const prev = prevUnrankedRef.current;
+    if (prev.boardId === activeId && prev.count > 0 && unrankedCount === 0) {
+      setPoolOverride(null);
+    }
+    prevUnrankedRef.current = { boardId: activeId, count: unrankedCount };
+  }, [activeId, unrankedCount]);
 
   useEffect(() => {
     if (!activeId) return undefined;
     let cancelled = false;
-    const urls = [];
+    const neededIds = new Set(activeImageKey ? activeImageKey.split("|") : []);
+    const map = imageUrlMapRef.current;
+
+    for (const [imageId, url] of map.entries()) {
+      if (!neededIds.has(imageId)) {
+        if (url) URL.revokeObjectURL(url);
+        map.delete(imageId);
+      }
+    }
+
+    const missingIds = [...neededIds].filter((imageId) => !map.has(imageId));
+    if (!missingIds.length) {
+      setImageUrls(Object.fromEntries(map.entries()));
+      return undefined;
+    }
+
+    setImageUrls(Object.fromEntries(map.entries()));
     (async () => {
-      const entries = await Promise.all(
-        (activeImageKey ? activeImageKey.split("|") : []).map(async (imageId) => {
+      const loaded = await Promise.all(
+        missingIds.map(async (imageId) => {
           const record = await getImage(imageId);
           if (!record?.blob) return [imageId, ""];
-          const url = URL.createObjectURL(record.blob);
-          urls.push(url);
-          return [imageId, url];
+          return [imageId, URL.createObjectURL(record.blob)];
         }),
       );
-      if (!cancelled) setImageUrls(Object.fromEntries(entries));
+      if (cancelled) {
+        loaded.forEach(([, url]) => {
+          if (url) URL.revokeObjectURL(url);
+        });
+        return;
+      }
+      loaded.forEach(([imageId, url]) => {
+        if (map.has(imageId)) {
+          if (url) URL.revokeObjectURL(url);
+        } else {
+          map.set(imageId, url);
+        }
+      });
+      setImageUrls(Object.fromEntries(map.entries()));
     })();
+
     return () => {
       cancelled = true;
-      urls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [activeId, activeImageKey]);
 
@@ -668,6 +720,7 @@ export default function TierApp() {
         ...board,
         unranked: [...board.unranked, ...created],
       }));
+      setPoolOverride(false);
       notify(source === "paste"
         ? `已添加 ${created.length} 张截图`
         : `已加入 ${created.length} 张封面`);
@@ -866,7 +919,8 @@ export default function TierApp() {
   const exportBackup = async () => {
     try {
     await runExclusive("正在导出完整备份…", async () => {
-    const images = await listImages();
+    const referencedIds = new Set(collectReferencedImageIds(boards));
+    const images = (await listImages()).filter((record) => referencedIds.has(record.id));
     const encoded = await Promise.all(
       images.map(async (record) => ({
         id: record.id,
@@ -1291,7 +1345,7 @@ export default function TierApp() {
         <section className={`unranked unranked--dock${poolCollapsed ? " unranked--collapsed" : ""}`}>
               <div className="unranked__heading">
                 <div className="unranked__copy">
-                  <h2><button className="pool-toggle" type="button" aria-expanded={!poolCollapsed} aria-controls="unranked-lane" onClick={() => setPoolCollapsed(previous => !previous)}><ChevronDown size={16} aria-hidden="true" /><span>待评分</span><span className="unranked__count">{activeBoard.unranked.length}</span></button></h2>
+                  <h2><button className="pool-toggle" type="button" aria-expanded={!poolCollapsed} aria-controls="unranked-lane" onClick={() => setPoolOverride((previous) => !(previous === null ? unrankedCount === 0 : previous))}><ChevronDown size={16} aria-hidden="true" /><span>待评分</span><span className="unranked__count">{activeBoard.unranked.length}</span></button></h2>
                 </div>
                 <div className="unranked__status">
                   <span className="paste-hint">Ctrl + V 粘贴图片</span>
@@ -1466,6 +1520,28 @@ function ItemDialog({ board, editing, imageUrl, onClose, onSave }) {
       </label>
       <label className="field">
         <span>评分等级</span>
+        <div className="item-editor__tier-pills" role="group" aria-label="快速选择评分等级">
+          <button
+            type="button"
+            className={`item-editor__tier-pill${targetId === "unranked" ? " is-selected" : ""}`}
+            disabled={submitting}
+            onClick={() => setTargetId("unranked")}
+          >
+            待评分
+          </button>
+          {board.tiers.map((tier) => (
+            <button
+              key={tier.id}
+              type="button"
+              className={`item-editor__tier-pill${targetId === tier.id ? " is-selected" : ""}`}
+              style={{ "--pill-color": tier.color }}
+              disabled={submitting}
+              onClick={() => setTargetId(tier.id)}
+            >
+              {tier.label}
+            </button>
+          ))}
+        </div>
         <select
           value={targetId}
           onChange={(event) => setTargetId(event.target.value)}

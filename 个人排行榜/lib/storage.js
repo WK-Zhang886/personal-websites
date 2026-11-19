@@ -77,6 +77,24 @@ export async function listImages() {
   return db.getAll("images");
 }
 
+export async function pruneUnusedImages(usedIds) {
+  const keep = new Set(usedIds);
+  return writes.enqueue(async () => {
+    const db = await database();
+    const tx = db.transaction("images", "readwrite");
+    const keys = await tx.store.getAllKeys();
+    let removed = 0;
+    for (const key of keys) {
+      if (!keep.has(key)) {
+        await tx.store.delete(key);
+        removed += 1;
+      }
+    }
+    await tx.done;
+    return removed;
+  });
+}
+
 export async function replaceEverything(boards, images) {
   return writes.enqueue(async () => {
   const db = await database();

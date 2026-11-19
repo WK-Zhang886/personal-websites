@@ -345,11 +345,102 @@
   border: 1px solid #263040;
   border-radius: 10px;
   box-shadow: none;
+  transition: max-height 0.18s ease, margin 0.18s ease, background-color 0.18s ease;
+}
+
+.app-shell.is-compact .unranked--dock.unranked--collapsed {
+  max-height: 44px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  background: rgba(15, 20, 29, 0.92);
 }
 
 .app-shell.is-compact .unranked__heading {
   min-height: 40px;
   padding: 6px 10px;
+}
+
+.app-shell.is-compact .unranked--dock .pool-toggle svg {
+  transition: transform 0.16s ease;
+}
+
+.app-shell.is-compact .unranked--dock.unranked--collapsed .pool-toggle svg {
+  transform: rotate(-90deg);
+}
+
+.rank-drop-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 95;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #38bdf8, #7c5cff);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.78), 0 0 4px rgba(124, 92, 255, 0.9);
+  pointer-events: none;
+  transition: transform 45ms ease-out, height 45ms ease-out, opacity 80ms ease;
+}
+
+.rank-drop-indicator::before,
+.rank-drop-indicator::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38bdf8;
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.85);
+}
+
+.rank-drop-indicator::before {
+  top: -3px;
+}
+
+.rank-drop-indicator::after {
+  bottom: -3px;
+  background: #7c5cff;
+}
+
+.item-lane--drag-target {
+  background: rgba(56, 189, 248, 0.08);
+  outline: 1.5px dashed rgba(56, 189, 248, 0.52);
+  outline-offset: -3px;
+  border-radius: 8px;
+}
+
+.item-editor__tier-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.item-editor__tier-pill {
+  appearance: none;
+  border: 1px solid #2b3648;
+  background: #131923;
+  color: #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.14s ease, border-color 0.14s ease, color 0.14s ease, transform 0.12s ease;
+}
+
+.item-editor__tier-pill:hover:not(:disabled) {
+  border-color: var(--pill-color, #7c5cff);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.item-editor__tier-pill.is-selected {
+  background: var(--pill-color, #7c5cff);
+  border-color: var(--pill-color, #7c5cff);
+  color: #090d12;
 }
 
 .pool-toggle {

@@ -130,3 +130,18 @@ export function moveItem(board, itemId, fromId, toId, targetIndex) {
   target.splice(safeIndex, 0, taken.item);
   return moved;
 }
+
+export function collectReferencedImageIds(boards) {
+  const ids = new Set();
+  for (const board of boards || []) {
+    for (const item of board?.unranked || []) {
+      if (item?.imageId) ids.add(item.imageId);
+    }
+    for (const tier of board?.tiers || []) {
+      for (const item of tier?.items || []) {
+        if (item?.imageId) ids.add(item.imageId);
+      }
+    }
+  }
+  return [...ids];
+}
